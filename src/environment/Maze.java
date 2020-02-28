@@ -1,35 +1,41 @@
 package environment;
 
-import constants.Constants;
+import utilities.Constants;
 
 public class Maze {
 
-    private State[][] maze;
+    private State[][] mazeState;
+    private Utility[][] mazeUtility;
 
     public Maze() {
-        maze = new State[Constants.NUM_OF_COLS][Constants.NUM_OF_ROWS];
+        mazeState = new State[Constants.NUM_OF_COLS][Constants.NUM_OF_ROWS];
 
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                maze[i][j] = new State();
+                mazeState[i][j] = new State();
+                mazeUtility[i][j] = new Utility();
             }
         }
 
         for (int[] j : Constants.LOCATION_GREEN) {
-            maze[j[0]][j[1]].setReward(Constants.REWARD_GREEN);
+            mazeState[j[0]][j[1]].setReward(Constants.REWARD_GREEN);
         }
 
         for (int[] j : Constants.LOCATION_BROWN) {
-            maze[j[0]][j[1]].setReward(Constants.REWARD_BROWN);
+            mazeState[j[0]][j[1]].setReward(Constants.REWARD_BROWN);
         }
 
         for (int[] j : Constants.LOCATION_WALL) {
-            maze[j[0]][j[1]].setReward(0);
-            maze[j[0]][j[1]].setWall(true);
+            mazeState[j[0]][j[1]].setReward(0);
+            mazeState[j[0]][j[1]].setWall(true);
         }
     }
 
-    public State[][] getMaze() {
-        return maze;
+    public State[][] getMazeState() {
+        return mazeState;
+    }
+
+    public Utility[][] getMazeUtility() {
+        return mazeUtility;
     }
 }
