@@ -12,7 +12,7 @@ public class PolicyIteration {
         State[][] mazeState = m.getMazeState();
         Utility[][] mazeUtility = m.getMazeUtility();
 //        while (!converge) {
-        for (int i = 0; i < 50; i++) { // tbc
+        for (int i = 0; i < 250; i++) { // tbc
             Utility[][] newUtility = policyEvaluation(mazeState, mazeUtility);
             newUtility = policyImprovement(mazeState, newUtility);
             updateAction(mazeUtility, newUtility); // tbc
@@ -113,16 +113,16 @@ public class PolicyIteration {
                 rightEU = calculateUtility(rightU, upU, downU);
 
                 String optimalAction = getOptimalAction(upEU, downEU, leftEU, rightEU);
-                u[i][j].setAction(optimalAction);
+                u[i][j].setAction(optimalAction); // do i still need to update utility?
             }
         }
         return u;
     }
 
-    public static String getOptimalAction(double upEU, double downEu, double leftEU, double rightEU) {
-        if (upEU > downEu && upEU > leftEU && upEU > rightEU) return "UP";
-        if (downEu > upEU && downEu > leftEU && downEu > rightEU) return "DOWN";
-        if (leftEU > downEu && leftEU > upEU && leftEU > rightEU) return "LEFT";
+    public static String getOptimalAction(double upEU, double downEU, double leftEU, double rightEU) {
+        if (upEU > downEU && upEU > leftEU && upEU > rightEU) return "UP";
+        if (downEU > upEU && downEU > leftEU && downEU > rightEU) return "DOWN";
+        if (leftEU > downEU && leftEU > upEU && leftEU > rightEU) return "LEFT";
         return "RIGHT";
     }
 
