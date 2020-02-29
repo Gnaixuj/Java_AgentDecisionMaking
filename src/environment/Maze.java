@@ -9,6 +9,7 @@ public class Maze {
 
     public Maze() {
         mazeState = new State[Constants.NUM_OF_COLS][Constants.NUM_OF_ROWS];
+        mazeUtility = new Utility[Constants.NUM_OF_COLS][Constants.NUM_OF_ROWS];
 
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
