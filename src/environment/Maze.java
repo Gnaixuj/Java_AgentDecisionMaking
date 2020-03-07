@@ -39,4 +39,6 @@ public class Maze {
     public Utility[][] getMazeUtility() {
         return mazeUtility;
     }
+
+    public void setMazeUtility(Utility[][] u) { mazeUtility = u; }
 }

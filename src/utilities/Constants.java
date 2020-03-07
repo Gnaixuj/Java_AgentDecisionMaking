@@ -12,6 +12,7 @@ public class Constants {
     public static final double REWARD_BROWN = -1;
 
     public static final double VALUE_NUM_OF_ITERATIONS = 50;
+    public static final int K = 25;
 
     public static final double DISCOUNT_FACTOR = 0.99;
 
@@ -19,6 +20,4 @@ public class Constants {
     public static final int[][] LOCATION_GREEN = { {0, 0}, {2, 0}, {3, 1}, {4, 2}, {5, 0}, {5, 3} };
     public static final int[][] LOCATION_BROWN = { {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 1} };
     public static final int[][] LOCATION_WALL = { {1, 0}, {1, 4}, {2, 4}, {3, 4}, {4, 1} };
-
-    public static final String[] ACTION_LIST = {"Up", "Down", "Left", "Right"};
 }

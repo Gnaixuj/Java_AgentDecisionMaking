@@ -7,70 +7,80 @@ import utilities.Constants;
 
 public class PolicyIteration {
 
+    public static int noOfIterations = 0;
+
     public static void PIteration(Maze m) {
         boolean converge = false;
         State[][] mazeState = m.getMazeState();
-        Utility[][] mazeUtility = m.getMazeUtility();
-//        while (!converge) {
-        for (int i = 0; i < 250; i++) { // tbc
+
+        while (!converge) {
+            noOfIterations++;
+            Utility[][] mazeUtility = m.getMazeUtility();
             Utility[][] newUtility = policyEvaluation(mazeState, mazeUtility);
-            newUtility = policyImprovement(mazeState, newUtility);
-            updateAction(mazeUtility, newUtility); // tbc
-//            converge = convergenceTest(mazeUtility, newUtility); // u want the new action but keep the old utility; make a copy of mazeState?
-//            if (!converge) {
-//                updateAction(mazeUtility, newUtility);
-//            }
+            Utility[][] bestUtility = policyImprovement(mazeState, newUtility);
+            converge = convergenceTest(mazeState, mazeUtility, newUtility, bestUtility);
+            if (!converge) {
+                m.setMazeUtility(newUtility);
+            }
+            System.out.println("NOI: " + noOfIterations); // d
         }
     }
 
-    // newCurStateUtility - updated utility of state s after going thru the Bellman Equation
+    // newCurStateUtility - updated utility of state s after going thru Value Iteration
     public static Utility[][] policyEvaluation(State[][] s, Utility[][] u) {
         Utility[][] newUtility = new Utility[Constants.NUM_OF_COLS][Constants.NUM_OF_ROWS];
-        Utility upU, downU, leftU, rightU;
-        double newCurStateUtility, optimalUtility;
+        double newCurStateUtility;
+        int k = 0;
 
-        for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
-            for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                newUtility[i][j] = new Utility();
-                if (s[i][j].isWall()) continue;
-                upU = getNextStateUtility(s, u, i, j, i, j-1);
-                downU = getNextStateUtility(s, u, i, j, i, j+1);
-                leftU = getNextStateUtility(s, u, i, j, i-1, j);
-                rightU = getNextStateUtility(s, u, i, j, i+1, j);
-
-                switch(u[i][j].getAction()) {
-                    case ("UP"): {
-//                        if (j == 0 || s[i][j-1].isWall()) optimalUtility = upU.getUtility(); // stay put
-//                        else optimalUtility = calculateUtility(upU, leftU, rightU);
-                        optimalUtility = calculateUtility(upU, leftU, rightU);
-                        break;
-                    }
-                    case ("DOWN"): {
-//                        if (j == 5 || s[i][j+1].isWall()) optimalUtility = downU.getUtility(); // stay put
-//                        else optimalUtility = calculateUtility(downU, leftU, rightU);
-                        optimalUtility = calculateUtility(downU, leftU, rightU);
-                        break;
-                    }
-                    case ("LEFT"): {
-//                        if (i == 0 || s[i-1][j].isWall()) optimalUtility = leftU.getUtility(); // stay put
-//                        else optimalUtility = calculateUtility(leftU, upU, downU);
-                        optimalUtility = calculateUtility(leftU, upU, downU);
-                        break;
-                    }
-                    case ("RIGHT"): {
-//                        if (i == 5 || s[i+1][j].isWall()) optimalUtility = rightU.getUtility(); // stay put
-//                        else optimalUtility = calculateUtility(rightU, upU, downU);
-                        optimalUtility = calculateUtility(rightU, upU, downU);
-                        break;
-                    }
-                    default: optimalUtility = 0;
+        while (k < Constants.K) {
+            for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
+                for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
+                    newUtility[i][j] = new Utility();
+                    if (s[i][j].isWall()) continue;
+                    newCurStateUtility = simplfiedBellmanEqn(s, u, i, j);
+//                    u[i][j].setUtility(newCurStateUtility);
+                    newUtility[i][j].setAction(u[i][j].getAction()); // tbc
+                    newUtility[i][j].setUtility(newCurStateUtility);
+//                    System.out.println("Debug"); // d
                 }
-
-                newCurStateUtility = s[i][j].getReward() + Constants.DISCOUNT_FACTOR * optimalUtility;
-                newUtility[i][j].setUtility(newCurStateUtility);
             }
+            k++;
+//            System.out.println(k); // d
         }
         return newUtility;
+    }
+
+    public static double simplfiedBellmanEqn(State[][] s, Utility[][] u, int curCol, int curRow) {
+        Utility upU, downU, leftU, rightU;
+        double curStateUtility, newCurStateUtility;
+
+        upU = getNextStateUtility(s, u, curCol, curRow, curCol, curRow - 1);
+        downU = getNextStateUtility(s, u, curCol, curRow, curCol, curRow + 1);
+        leftU = getNextStateUtility(s, u, curCol, curRow, curCol - 1, curRow);
+        rightU = getNextStateUtility(s, u, curCol, curRow, curCol + 1, curRow);
+
+        switch (u[curCol][curRow].getAction()) {
+            case ("UP"): {
+                curStateUtility = calculateUtility(upU, leftU, rightU);
+                break;
+            }
+            case ("DOWN"): {
+                curStateUtility = calculateUtility(downU, leftU, rightU);
+                break;
+            }
+            case ("LEFT"): {
+                curStateUtility = calculateUtility(leftU, upU, downU);
+                break;
+            }
+            case ("RIGHT"): {
+                curStateUtility = calculateUtility(rightU, upU, downU);
+                break;
+            }
+            default:
+                curStateUtility = 0;
+        }
+        newCurStateUtility = s[curCol][curRow].getReward() + Constants.DISCOUNT_FACTOR * curStateUtility;
+        return newCurStateUtility;
     }
 
     public static Utility getNextStateUtility(State[][] s, Utility[][] u, int curCol, int curRow, int nextCol, int nextRow) {
@@ -86,64 +96,56 @@ public class PolicyIteration {
     }
 
     public static Utility[][] policyImprovement(State[][] s, Utility[][] u) {
+        Utility[][] bestUtility = new Utility[Constants.NUM_OF_COLS][Constants.NUM_OF_ROWS];
         double upEU, downEU, leftEU, rightEU;
         Utility upU, downU, leftU, rightU;
+
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
+                bestUtility[i][j] = new Utility();
                 if (s[i][j].isWall()) continue;
                 upU = getNextStateUtility(s, u, i, j, i, j-1);
                 downU = getNextStateUtility(s, u, i, j, i, j+1);
                 leftU = getNextStateUtility(s, u, i, j, i-1, j);
                 rightU = getNextStateUtility(s, u, i, j, i+1, j);
 
-//                if (j == 0 || s[i][j-1].isWall()) upEU = upU.getUtility();
-//                else upEU = calculateUtility(upU, leftU, rightU);
-                upEU = calculateUtility(upU, leftU, rightU);
-
-//                if (j == 5 || s[i][j+1].isWall()) downEU = u[i][j].getUtility();
-//                else downEU = calculateUtility(downU, leftU, rightU);
+                upEU = calculateUtility(upU, leftU, rightU); // initially will be equal to the cur policy
                 downEU = calculateUtility(downU, leftU, rightU);
-
-//                if (i == 0 || s[i-1][j].isWall()) leftEU = u[i][j].getUtility();
-//                else leftEU = calculateUtility(leftU, upU, downU);
                 leftEU = calculateUtility(leftU, upU, downU);
-
-//                if (i == 5 || s[i+1][j].isWall()) rightEU = u[i][j].getUtility();
-//                else rightEU = calculateUtility(rightU, upU, downU);
                 rightEU = calculateUtility(rightU, upU, downU);
 
-                String optimalAction = getOptimalAction(upEU, downEU, leftEU, rightEU);
-                u[i][j].setAction(optimalAction); // do i still need to update utility?
+                Utility optimalUtility = getOptimalUtility(upEU, downEU, leftEU, rightEU);
+                bestUtility[i][j].setAction(optimalUtility.getAction());
+                bestUtility[i][j].setUtility(optimalUtility.getUtility());
             }
         }
-        return u;
+        return bestUtility;
     }
 
-    public static String getOptimalAction(double upEU, double downEU, double leftEU, double rightEU) {
-        if (upEU > downEU && upEU > leftEU && upEU > rightEU) return "UP";
-        if (downEU > upEU && downEU > leftEU && downEU > rightEU) return "DOWN";
-        if (leftEU > downEU && leftEU > upEU && leftEU > rightEU) return "LEFT";
-        return "RIGHT";
+    public static Utility getOptimalUtility(double upEU, double downEU, double leftEU, double rightEU) {
+        if (upEU > downEU && upEU > leftEU && upEU > rightEU) return new Utility("UP", upEU);
+        if (downEU > upEU && downEU > leftEU && downEU > rightEU) return new Utility("DOWN", downEU);
+        if (leftEU > downEU && leftEU > upEU && leftEU > rightEU) return new Utility("LEFT", leftEU);
+        return new Utility("RIGHT", rightEU);
     }
 
-    public static boolean convergenceTest(Utility[][] oldU, Utility[][] newU) {
+    // modified policy iteration
+    public static boolean convergenceTest(State[][] s, Utility[][] oldU, Utility[][] newU, Utility[][] bestU) {
+        boolean converge = true;
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                if (!(oldU[i][j].getAction().equals(newU[i][j].getAction()))) return false;
-            }
-        }
-        return true;
-    }
-
-    public static void updateAction(Utility[][] oldU, Utility[][] newU) {
-        for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
-            for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                oldU[i][j].setUtility(newU[i][j].getUtility());
-                if (!(oldU[i][j].getAction().equals(newU[i][j].getAction()))) {
-                    oldU[i][j].setAction(newU[i][j].getAction());
+//                if (newU[i][j].getUtility() > oldU[i][j].getUtility()) {
+//                    oldU[i][j].setAction(newU[i][j].getAction());
+//                    converge = false;
+//                }
+                if (bestU[i][j].getUtility() > simplfiedBellmanEqn(s, newU, i, j)) {
+                    newU[i][j].setAction(bestU[i][j].getAction());
+                    converge = false;
                 }
+//                oldU[i][j].setUtility(newU[i][j].getUtility());
             }
         }
+        return converge;
     }
 
     public static void main(String[] args){
@@ -151,6 +153,8 @@ public class PolicyIteration {
         PIteration(m);
         State[][] s = m.getMazeState();
         Utility[][] u = m.getMazeUtility();
+
+        System.out.println("Optimal Policy: ");
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
                 if (s[j][i].isWall()) System.out.print(" WALL ");
@@ -159,11 +163,13 @@ public class PolicyIteration {
             System.out.println();
         }
 
+        System.out.println("State Utilities: ");
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
                 System.out.print(" " + u[j][i].getUtility() + " ");
             }
             System.out.println();
         }
+        System.out.println("No. Of Iterations: " + noOfIterations);
     }
 }
