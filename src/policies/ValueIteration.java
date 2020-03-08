@@ -4,6 +4,7 @@ import environment.Maze;
 import environment.State;
 import environment.Utility;
 import utilities.Constants;
+import utilities.UtilityHelper;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -44,57 +45,29 @@ public class ValueIteration {
             }
         }
 
-        cloneUtilityArray(u, newUtility);
+        UtilityHelper.cloneUtilityArray(u, newUtility);
         utilityList.add(newUtility);
 
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
                 if (s[i][j].isWall()) continue;
-                upU = getNextStateUtility(s, u, i, j, i, j-1);
-                downU = getNextStateUtility(s, u, i, j, i, j+1);
-                leftU = getNextStateUtility(s, u, i, j, i-1, j);
-                rightU = getNextStateUtility(s, u, i, j, i+1, j);
+                upU = UtilityHelper.getNextStateUtility(s, u, i, j, i, j-1);
+                downU = UtilityHelper.getNextStateUtility(s, u, i, j, i, j+1);
+                leftU = UtilityHelper.getNextStateUtility(s, u, i, j, i-1, j);
+                rightU = UtilityHelper.getNextStateUtility(s, u, i, j, i+1, j);
 
-                upEU = calculateUtility(upU, leftU, rightU);
-                downEU = calculateUtility(downU, leftU, rightU);
-                leftEU = calculateUtility(leftU, upU, downU);
-                rightEU = calculateUtility(rightU, upU, downU);
+                upEU = UtilityHelper.calculateUtility(upU, leftU, rightU);
+                downEU = UtilityHelper.calculateUtility(downU, leftU, rightU);
+                leftEU = UtilityHelper.calculateUtility(leftU, upU, downU);
+                rightEU = UtilityHelper.calculateUtility(rightU, upU, downU);
 
-                Utility optimalU = getOptimalUtility(upEU, downEU, leftEU, rightEU);
+                Utility optimalU = UtilityHelper.getOptimalUtility(upEU, downEU, leftEU, rightEU);
                 newCurStateUtility = s[i][j].getReward() + Constants.DISCOUNT_FACTOR * optimalU.getUtility();
                 newUtility[i][j].setUtility(newCurStateUtility);
                 newUtility[i][j].setAction(optimalU.getAction());
             }
         }
         return newUtility;
-    }
-
-    public static void cloneUtilityArray(Utility[][] source, Utility[][] destination) {
-        for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
-            for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                destination[i][j].setAction(source[i][j].getAction());
-                destination[i][j].setUtility(source[i][j].getUtility());
-            }
-        }
-    }
-
-    public static Utility getNextStateUtility(State[][] s, Utility[][] u, int curCol, int curRow, int nextCol, int nextRow) {
-        if (nextCol < 0 || nextCol > 5 || nextRow < 0 || nextRow > 5) return u[curCol][curRow];
-        if (s[nextCol][nextRow].isWall()) return u[curCol][curRow];
-        return u[nextCol][nextRow];
-    }
-
-    public static double calculateUtility(Utility intended, Utility side1, Utility side2) {
-        return Constants.PROB_INTENDED * intended.getUtility() +
-                Constants.PROB_RIGHT_ANGLE * side1.getUtility() +
-                Constants.PROB_RIGHT_ANGLE * side2.getUtility();
-    }
-
-    public static Utility getOptimalUtility(double upEU, double downEU, double leftEU, double rightEU) {
-        if (upEU > downEU && upEU > leftEU && upEU > rightEU) return new Utility("UP", upEU);
-        if (downEU > upEU && downEU > leftEU && downEU > rightEU) return new Utility("DOWN", downEU);
-        if (leftEU > downEU && leftEU > upEU && leftEU > rightEU) return new Utility("LEFT", leftEU);
-        return new Utility("RIGHT", rightEU);
     }
 
     public static double calcMaxChange(Utility[][] oldU, Utility[][] newU, double maxChange) {
