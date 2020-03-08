@@ -11,7 +11,7 @@ public class Constants {
     public static final double REWARD_GREEN = 1;
     public static final double REWARD_BROWN = -1;
 
-    public static final double VALUE_NUM_OF_ITERATIONS = 50;
+    public static final double E = 60;
     public static final int K = 25;
 
     public static final double DISCOUNT_FACTOR = 0.99;

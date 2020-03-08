@@ -5,21 +5,31 @@ import environment.State;
 import environment.Utility;
 import utilities.Constants;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ValueIteration {
-    private static final double error = 0.1;
-    private static int noOfIteration = 0;
+
+    private static int noOfIterations = 0;
+    private static List<Utility[][]> utilityList;
 
     public static void VIteration(Maze m) {
+        double maxChange;
         boolean converge = false;
         State[][] mazeState = m.getMazeState();
-        Utility[][] oldUtility = m.getMazeUtility();
-        while (!converge) {
-            noOfIteration++;
-            Utility[][] newUtility = valueIteration(mazeState, oldUtility);
-            converge = convergenceTest(oldUtility, newUtility);
-            updateAction(oldUtility, newUtility);
-        }
+        utilityList = new ArrayList<>();
 
+        while (!converge) {
+            noOfIterations++;
+            Utility[][] mazeUtility = m.getMazeUtility();
+            maxChange = 0;
+            Utility[][] newUtility = valueIteration(mazeState, mazeUtility);
+            maxChange = calcMaxChange(mazeUtility, newUtility, maxChange);
+            converge = convergenceTest(maxChange);
+            m.setMazeUtility(newUtility);
+        }
     }
 
     public static Utility[][] valueIteration(State[][] s, Utility[][] u) {
@@ -31,6 +41,14 @@ public class ValueIteration {
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
                 newUtility[i][j] = new Utility();
+            }
+        }
+
+        cloneUtilityArray(u, newUtility);
+        utilityList.add(newUtility);
+
+        for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
+            for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
                 if (s[i][j].isWall()) continue;
                 upU = getNextStateUtility(s, u, i, j, i, j-1);
                 downU = getNextStateUtility(s, u, i, j, i, j+1);
@@ -51,6 +69,15 @@ public class ValueIteration {
         return newUtility;
     }
 
+    public static void cloneUtilityArray(Utility[][] source, Utility[][] destination) {
+        for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
+            for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
+                destination[i][j].setAction(source[i][j].getAction());
+                destination[i][j].setUtility(source[i][j].getUtility());
+            }
+        }
+    }
+
     public static Utility getNextStateUtility(State[][] s, Utility[][] u, int curCol, int curRow, int nextCol, int nextRow) {
         if (nextCol < 0 || nextCol > 5 || nextRow < 0 || nextRow > 5) return u[curCol][curRow];
         if (s[nextCol][nextRow].isWall()) return u[curCol][curRow];
@@ -64,46 +91,26 @@ public class ValueIteration {
     }
 
     public static Utility getOptimalUtility(double upEU, double downEU, double leftEU, double rightEU) {
-        Utility u = new Utility();
-        if (upEU > downEU && upEU > leftEU && upEU > rightEU) {
-            u.setUtility(upEU);
-            u.setAction("UP");
-        }
-        else if (downEU > upEU && downEU > leftEU && downEU > rightEU) {
-            u.setUtility(downEU);
-            u.setAction("DOWN");
-        }
-        else if (leftEU > downEU && leftEU > upEU && leftEU > rightEU) {
-            u.setUtility(leftEU);
-            u.setAction("LEFT");
-        }
-        else {
-            u.setUtility(rightEU);
-            u.setAction("RIGHT");
-        }
-        return u;
+        if (upEU > downEU && upEU > leftEU && upEU > rightEU) return new Utility("UP", upEU);
+        if (downEU > upEU && downEU > leftEU && downEU > rightEU) return new Utility("DOWN", downEU);
+        if (leftEU > downEU && leftEU > upEU && leftEU > rightEU) return new Utility("LEFT", leftEU);
+        return new Utility("RIGHT", rightEU);
     }
 
-    public static boolean convergenceTest(Utility[][] oldU, Utility[][] newU) {
+    public static double calcMaxChange(Utility[][] oldU, Utility[][] newU, double maxChange) {
         double absDiff;
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
                 absDiff = Math.abs(newU[i][j].getUtility() - oldU[i][j].getUtility());
-                if (absDiff > error * (1 - Constants.DISCOUNT_FACTOR) / Constants.DISCOUNT_FACTOR) return false;
+                if (absDiff > maxChange) return absDiff;
             }
         }
-        return true;
+        return maxChange;
     }
 
-    public static void updateAction(Utility[][] oldU, Utility[][] newU) {
-        for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
-            for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                oldU[i][j].setUtility(newU[i][j].getUtility());
-                if (!(oldU[i][j].getAction().equals(newU[i][j].getAction()))) {
-                    oldU[i][j].setAction(newU[i][j].getAction());
-                }
-            }
-        }
+    public static boolean convergenceTest(double maxChange) {
+        if (maxChange < Constants.E * (1 - Constants.DISCOUNT_FACTOR) / Constants.DISCOUNT_FACTOR) return true;
+        return false;
     }
 
     public static void main(String[] args){
@@ -111,6 +118,10 @@ public class ValueIteration {
         VIteration(m);
         State[][] s = m.getMazeState();
         Utility[][] u = m.getMazeUtility();
+        DecimalFormat df = new DecimalFormat("#.###");
+        df.setRoundingMode(RoundingMode.CEILING);
+
+        System.out.println("Optimal Policy: ");
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
                 if (s[j][i].isWall()) System.out.print(" WALL ");
@@ -119,13 +130,14 @@ public class ValueIteration {
             System.out.println();
         }
 
+        System.out.println("State Utilities: ");
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                System.out.print(" " + u[j][i].getUtility() + " ");
+                if (u[j][i].getUtility() == 0) System.out.print(" 0.000 ");
+                else System.out.print(" " + df.format(u[j][i].getUtility()) + " ");
             }
             System.out.println();
         }
-
-        System.out.println(noOfIteration);
+        System.out.println("No. Of Iterations: " + noOfIterations);
     }
 }
