@@ -2,21 +2,21 @@ package environment;
 
 public class Utility {
 
-    private String action = "LEFT";
+    private char action = 'L';
     private double utility = 0;
 
     public Utility() {}
 
-    public Utility(String a, double u) {
+    public Utility(char a, double u) {
         action = a;
         utility = u;
     }
 
-    public String getAction() {
+    public char getAction() {
         return action;
     }
 
-    public void setAction(String action) {
+    public void setAction(char action) {
         this.action = action;
     }
 

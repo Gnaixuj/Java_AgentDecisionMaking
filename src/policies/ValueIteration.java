@@ -27,7 +27,7 @@ public class ValueIteration {
             Utility[][] mazeUtility = m.getMazeUtility();
             maxChange = 0;
             Utility[][] newUtility = valueIteration(mazeState, mazeUtility);
-            maxChange = calcMaxChange(mazeUtility, newUtility, maxChange);
+            maxChange = calcMaxChange(mazeState, mazeUtility, newUtility, maxChange);
             converge = convergenceTest(maxChange);
             m.setMazeUtility(newUtility);
         }
@@ -70,15 +70,17 @@ public class ValueIteration {
         return newUtility;
     }
 
-    public static double calcMaxChange(Utility[][] oldU, Utility[][] newU, double maxChange) {
+    public static double calcMaxChange(State[][] s, Utility[][] oldU, Utility[][] newU, double maxChange) {
         double absDiff;
+        double max = maxChange;
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
+                if (s[i][j].isWall()) continue;
                 absDiff = Math.abs(newU[i][j].getUtility() - oldU[i][j].getUtility());
-                if (absDiff > maxChange) return absDiff;
+                if (absDiff > max) max = absDiff;
             }
         }
-        return maxChange;
+        return max;
     }
 
     public static boolean convergenceTest(double maxChange) {
@@ -96,21 +98,30 @@ public class ValueIteration {
 
         System.out.println("Optimal Policy: ");
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
+            System.out.print("|");
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                if (s[j][i].isWall()) System.out.print(" WALL ");
-                else System.out.print(" " + u[j][i].getAction() + " ");
+                if (s[j][i].isWall()) System.out.print(" W |");
+                else System.out.print(" " + u[j][i].getAction() + " |");
             }
             System.out.println();
         }
-
+        System.out.println("Key: U - UP   | D - DOWN");
+        System.out.println("     L - LEFT | R - RIGHT");
+        System.out.println("     W - WALL");
+        System.out.println();
         System.out.println("State Utilities: ");
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
+            System.out.print("|");
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                if (u[j][i].getUtility() == 0) System.out.print(" 0.000 ");
-                else System.out.print(" " + df.format(u[j][i].getUtility()) + " ");
+//                if ((i == 1 && j == 3) || (i == 2 && j == 5)) System.out.print(" " + df.format(u[j][i].getUtility()) + "0 |" );
+//                else if ((i == 0 && j == 0) || (i == 2 && j == 2)) System.out.print(" " + df.format(u[j][i].getUtility()) + "00 |" );
+                if (u[j][i].getUtility() == 0) System.out.print(" 00.000 |");
+                else if (u[j][i].getUtility() < 10) System.out.print(" 0" + df.format(u[j][i].getUtility()) + " |" );
+                else System.out.print(" " + df.format(u[j][i].getUtility()) + " |");
             }
             System.out.println();
         }
+        System.out.println();
         System.out.println("No. Of Iterations: " + noOfIterations);
     }
 }

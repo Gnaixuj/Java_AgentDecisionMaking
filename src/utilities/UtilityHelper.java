@@ -32,19 +32,19 @@ public class UtilityHelper {
         rightU = getNextStateUtility(s, u, curCol, curRow, curCol + 1, curRow);
 
         switch (u[curCol][curRow].getAction()) {
-            case ("UP"): {
+            case ('U'): {
                 curStateUtility = calculateUtility(upU, leftU, rightU);
                 break;
             }
-            case ("DOWN"): {
+            case ('D'): {
                 curStateUtility = calculateUtility(downU, leftU, rightU);
                 break;
             }
-            case ("LEFT"): {
+            case ('L'): {
                 curStateUtility = calculateUtility(leftU, upU, downU);
                 break;
             }
-            case ("RIGHT"): {
+            case ('R'): {
                 curStateUtility = calculateUtility(rightU, upU, downU);
                 break;
             }
@@ -67,9 +67,9 @@ public class UtilityHelper {
     }
 
     public static Utility getOptimalUtility(double upEU, double downEU, double leftEU, double rightEU) {
-        if (upEU > downEU && upEU > leftEU && upEU > rightEU) return new Utility("UP", upEU);
-        if (downEU > upEU && downEU > leftEU && downEU > rightEU) return new Utility("DOWN", downEU);
-        if (leftEU > downEU && leftEU > upEU && leftEU > rightEU) return new Utility("LEFT", leftEU);
-        return new Utility("RIGHT", rightEU);
+        if (upEU > downEU && upEU > leftEU && upEU > rightEU) return new Utility('U', upEU);
+        if (downEU > upEU && downEU > leftEU && downEU > rightEU) return new Utility('D', downEU);
+        if (leftEU > downEU && leftEU > upEU && leftEU > rightEU) return new Utility('L', leftEU);
+        return new Utility('R', rightEU);
     }
 }
