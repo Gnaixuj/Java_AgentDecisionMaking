@@ -4,10 +4,9 @@ import environment.Maze;
 import environment.State;
 import environment.Utility;
 import utilities.Constants;
+import utilities.DataHelper;
 import utilities.UtilityHelper;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,8 +92,6 @@ public class ValueIteration {
         VIteration(m);
         State[][] s = m.getMazeState();
         Utility[][] u = m.getMazeUtility();
-        DecimalFormat df = new DecimalFormat("#.###");
-        df.setRoundingMode(RoundingMode.CEILING);
 
         System.out.println("Optimal Policy: ");
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
@@ -113,15 +110,17 @@ public class ValueIteration {
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
             System.out.print("|");
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-//                if ((i == 1 && j == 3) || (i == 2 && j == 5)) System.out.print(" " + df.format(u[j][i].getUtility()) + "0 |" );
-//                else if ((i == 0 && j == 0) || (i == 2 && j == 2)) System.out.print(" " + df.format(u[j][i].getUtility()) + "00 |" );
                 if (u[j][i].getUtility() == 0) System.out.print(" 00.000 |");
-                else if (u[j][i].getUtility() < 10) System.out.print(" 0" + df.format(u[j][i].getUtility()) + " |" );
-                else System.out.print(" " + df.format(u[j][i].getUtility()) + " |");
+                else if (u[j][i].getUtility() >= 99.9995) System.out.print(" 100.00 |");
+                else if (u[j][i].getUtility() < 10) System.out.print(" 0" + DataHelper.roundOff(u[j][i].getUtility()) + " |");
+                else System.out.print(" " + DataHelper.roundOff(u[j][i].getUtility()) + " |");
             }
             System.out.println();
         }
         System.out.println();
         System.out.println("No. Of Iterations: " + noOfIterations);
+
+        DataHelper.writeToFile(utilityList, "valueIteration");
     }
+
 }

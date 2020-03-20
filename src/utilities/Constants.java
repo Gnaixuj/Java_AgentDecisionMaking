@@ -11,8 +11,8 @@ public class Constants {
     public static final double REWARD_GREEN = 1;
     public static final double REWARD_BROWN = -1;
 
-    public static final double E = 61;
-    public static final int K = 25;
+    public static final double E = 1e-9;
+    public static final int K = 20;
 
     public static final double DISCOUNT_FACTOR = 0.99;
 

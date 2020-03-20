@@ -4,10 +4,9 @@ import environment.Maze;
 import environment.State;
 import environment.Utility;
 import utilities.Constants;
+import utilities.DataHelper;
 import utilities.UtilityHelper;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,11 +26,7 @@ public class PolicyIteration {
             Utility[][] newUtility = policyEvaluation(mazeState, mazeUtility);
             Utility[][] bestUtility = policyImprovement(mazeState, newUtility);
             converge = convergenceTest(mazeState, newUtility, bestUtility);
-//            if (!converge) {
-//                m.setMazeUtility(newUtility);
-//            }
             m.setMazeUtility(newUtility);
-            System.out.println("NOI: " + noOfIterations); // d
         }
     }
 
@@ -49,7 +44,7 @@ public class PolicyIteration {
         }
 
         UtilityHelper.cloneUtilityArray(u, newUtility);
-        utilityList.add(newUtility); // To Be Used
+        utilityList.add(newUtility);
 
         while (k < Constants.K) {
             UtilityHelper.cloneUtilityArray(newUtility, utilityClone);
@@ -79,7 +74,7 @@ public class PolicyIteration {
                 leftU = UtilityHelper.getNextStateUtility(s, u, i, j, i-1, j);
                 rightU = UtilityHelper.getNextStateUtility(s, u, i, j, i+1, j);
 
-                upEU = UtilityHelper.calculateUtility(upU, leftU, rightU); // initially will be equal to the cur policy
+                upEU = UtilityHelper.calculateUtility(upU, leftU, rightU); 
                 downEU = UtilityHelper.calculateUtility(downU, leftU, rightU);
                 leftEU = UtilityHelper.calculateUtility(leftU, upU, downU);
                 rightEU = UtilityHelper.calculateUtility(rightU, upU, downU);
@@ -111,26 +106,32 @@ public class PolicyIteration {
         PIteration(m);
         State[][] s = m.getMazeState();
         Utility[][] u = m.getMazeUtility();
-        DecimalFormat df = new DecimalFormat("#.###");
-        df.setRoundingMode(RoundingMode.CEILING);
 
         System.out.println("Optimal Policy: ");
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
+            System.out.print("|");
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                if (s[j][i].isWall()) System.out.print(" WALL ");
-                else System.out.print(" " + u[j][i].getAction() + " ");
+                if (s[j][i].isWall()) System.out.print(" W |");
+                else System.out.print(" " + u[j][i].getAction() + " |");
             }
             System.out.println();
         }
-
+        System.out.println("Key: U - UP   | D - DOWN");
+        System.out.println("     L - LEFT | R - RIGHT");
+        System.out.println("     W - WALL");
+        System.out.println(); 
         System.out.println("State Utilities: ");
         for (int i = 0; i < Constants.NUM_OF_COLS; i++) {
+            System.out.print("|");
             for (int j = 0; j < Constants.NUM_OF_ROWS; j++) {
-                if (u[j][i].getUtility() == 0) System.out.print(" 0.000 ");
-                else System.out.print(" " + df.format(u[j][i].getUtility()) + " ");
+                if (u[j][i].getUtility() == 0) System.out.print(" 00.000 |");
+                else if (u[j][i].getUtility() >= 99.9995) System.out.print(" 100.00 |");
+                else if (u[j][i].getUtility() < 10) System.out.print(" 0" + DataHelper.roundOff(u[j][i].getUtility()) + " |");
+                else System.out.print(" " + DataHelper.roundOff(u[j][i].getUtility()) + " |");
             }
             System.out.println();
         }
+        System.out.println();
         System.out.println("No. Of Iterations: " + noOfIterations);
     }
 }
