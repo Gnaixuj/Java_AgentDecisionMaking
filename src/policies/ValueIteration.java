@@ -89,7 +89,9 @@ public class ValueIteration {
 
     public static void main(String[] args){
         Maze m = new Maze();
+        long startTime = System.nanoTime();
         VIteration(m);
+        long elapsedTime = System.nanoTime() - startTime;
         State[][] s = m.getMazeState();
         Utility[][] u = m.getMazeUtility();
 
@@ -119,8 +121,9 @@ public class ValueIteration {
         }
         System.out.println();
         System.out.println("No. Of Iterations: " + noOfIterations);
+        System.out.println("Time (in ms): " + elapsedTime / 1000000);
 
-        DataHelper.writeToFile(utilityList, "valueIteration");
+//        DataHelper.writeToFile(utilityList, "valueIteration");
     }
 
 }
